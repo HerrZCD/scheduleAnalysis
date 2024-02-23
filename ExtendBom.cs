@@ -49,7 +49,7 @@ namespace iSchedule.Base
                 // Null is when the row only contains empty cells.
                 if (sheet.GetRow(row) != null)
                 {
-                    if (string.IsNullOrEmpty(sheet.GetRow(row).GetCell(kBOMIdColumn).StringCellValue))
+                    if (string.IsNullOrEmpty(sheet.GetRow(row).GetCell(kOutputMaterialId).StringCellValue))
                     {
                         break;
                     }
@@ -59,22 +59,10 @@ namespace iSchedule.Base
                     string outputMaterialId = sheet.GetRow(row).GetCell(kOutputMaterialId).StringCellValue;
                     int outputMaterialNum = (int)sheet.GetRow(row).GetCell(kOutputMaterialNum).NumericCellValue;
 
-                    if (!string.IsNullOrEmpty(inputMaterialId) && inputMaterialId != lastInputMaterialId)
-                    {
-                        lastInputMaterialId = inputMaterialId;
-                        lastInputMaterialNum = (int)sheet.GetRow(row).GetCell(kInputMaterialNum).NumericCellValue;
-                    }
-
                     if (!string.IsNullOrEmpty(BOMId) && BOMId != lastBOMId)
                     {
-                        if (string.IsNullOrEmpty(lastBOMId))
+                        if (!string.IsNullOrEmpty(lastBOMId))
                         {
-                            // Handle the first bom.
-                            lastBOMId = BOMId;
-                        }
-                        else
-                        {
-                            // Should add new bom to the list. 
                             bom_list.Add(new BomData
                             {
                                 BOMDataId = lastBOMId,
@@ -84,12 +72,16 @@ namespace iSchedule.Base
                                     Output = output_material_list
                                 }
                             });
-
-                            // Reset the variables.
-                            lastBOMId = BOMId;
-                            output_material_list = new List<BOMMaterialItem> { new BOMMaterialItem { MaterialId = outputMaterialId, Number = outputMaterialNum } };
                         }
+                        // Reset the variables.
+                        lastBOMId = BOMId;
+                        output_material_list = new List<BOMMaterialItem> { new BOMMaterialItem { MaterialId = outputMaterialId, Number = outputMaterialNum } };
+                    }
 
+                    if (!string.IsNullOrEmpty(inputMaterialId) && inputMaterialId != lastInputMaterialId)
+                    {
+                        lastInputMaterialId = inputMaterialId;
+                        lastInputMaterialNum = (int)sheet.GetRow(row).GetCell(kInputMaterialNum).NumericCellValue;
                     }
 
                     else if (string.IsNullOrEmpty(BOMId))
@@ -98,7 +90,7 @@ namespace iSchedule.Base
                     }
                 }
             }
-            return new Result { error_code = 0, bom_list = null };
+            return new Result { error_code = 0, bom_list = bom_list };
         }
     } // class ExtendBomDeserilizer
 } // namespace iSchedule.Base
