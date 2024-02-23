@@ -48,6 +48,7 @@ namespace iSchedule.Base
             int lastInputMaterialNum = 0;
 
             int outputNumberOfInputMaterial = 0;
+            List<BomData> tempList = new List<BomData>();
             List<BOMMaterialItem> output_material_list = new List<BOMMaterialItem>();
             for (int row = kStartRow; row <= sheet.LastRowNum; row++)
             {
@@ -68,7 +69,7 @@ namespace iSchedule.Base
                     {
                         if (!string.IsNullOrEmpty(lastBOMId))
                         {
-                            bom_list.Add(new BomData
+                            var bom = new BomData
                             {
                                 BOMDataId = lastBOMId,
                                 MaterialInfo = new BOMMaterial
@@ -76,7 +77,9 @@ namespace iSchedule.Base
                                     Input = new List<BOMMaterialItem> { new BOMMaterialItem { MaterialId = lastInputMaterialId, Number = lastInputMaterialNum } },
                                     Output = output_material_list
                                 }
-                            });
+                            };
+                            bom_list.Add(bom);
+                            tempList.Add(bom);
                         }
                         // Reset the variables.
                         lastBOMId = BOMId;
@@ -90,12 +93,64 @@ namespace iSchedule.Base
 
                     if (!string.IsNullOrEmpty(inputMaterialId) && inputMaterialId != lastInputMaterialId)
                     {
-                        // We should ajust 
+                        // Need to update the number of bom.
+                        float rate = (float)outputNumberOfInputMaterial / lastInputMaterialNum;
+                        foreach (var item in tempList)
+                        {
+                            foreach (var output in item.MaterialInfo.Output)
+                            {
+                                output.Number = (int)rate;
+                            }
+
+                            foreach (var input in item.MaterialInfo.Input)
+                            {
+                                input.Number = 1;
+                            }
+                        }
+
+
                         lastInputMaterialId = inputMaterialId;
+                        tempList.Clear();
                         lastInputMaterialNum = (int)sheet.GetRow(row).GetCell(kInputMaterialNum).NumericCellValue;
+                        outputNumberOfInputMaterial = outputMaterialNum;
                     } 
 
+                    else
+                    {
+                        outputNumberOfInputMaterial += outputMaterialNum;
+
+                    }
+
                     
+                }
+            }
+
+            // Add the last bom.
+            var lastBom = new BomData
+            {
+                BOMDataId = lastBOMId,
+                MaterialInfo = new BOMMaterial
+                {
+                    Input = new List<BOMMaterialItem> { new BOMMaterialItem { MaterialId = lastInputMaterialId, Number = lastInputMaterialNum } },
+                    Output = output_material_list
+                }
+            };
+
+            bom_list.Add(lastBom);
+            tempList.Add(lastBom);
+
+            // Handle the last bom number.
+            float lastRate = (float)outputNumberOfInputMaterial / lastInputMaterialNum;
+            foreach (var item in tempList)
+            {
+                foreach (var output in item.MaterialInfo.Output)
+                {
+                    output.Number = (int)lastRate;
+                }
+
+                foreach (var input in item.MaterialInfo.Input)
+                {
+                    input.Number = 1;
                 }
             }
             return new Result { error_code = 0, bom_list = bom_list };
