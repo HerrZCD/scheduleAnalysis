@@ -34,6 +34,9 @@ namespace iSchedule.Base
         {
             // We assume all the BOMs releated to cutting will have more output than input, we will use the
             // output row to check if the bom read finished.
+
+            // We assume there is a fixed rate between boms which share the same imput material, that say, if material A
+            // produce 10 Bs in BOM b, so A will also procduce 10 Cs in BOM c.
             var hssfwb = DeserilizeUtil.LoadWorkbook(filePath);
             ISheet sheet = hssfwb.GetSheet(sheetName);
             if (sheet == null)
@@ -43,6 +46,8 @@ namespace iSchedule.Base
             string lastBOMId = "";
             string lastInputMaterialId = "";
             int lastInputMaterialNum = 0;
+
+            int outputNumberOfInputMaterial = 0;
             List<BOMMaterialItem> output_material_list = new List<BOMMaterialItem>();
             for (int row = kStartRow; row <= sheet.LastRowNum; row++)
             {
@@ -78,16 +83,19 @@ namespace iSchedule.Base
                         output_material_list = new List<BOMMaterialItem> { new BOMMaterialItem { MaterialId = outputMaterialId, Number = outputMaterialNum } };
                     }
 
-                    if (!string.IsNullOrEmpty(inputMaterialId) && inputMaterialId != lastInputMaterialId)
-                    {
-                        lastInputMaterialId = inputMaterialId;
-                        lastInputMaterialNum = (int)sheet.GetRow(row).GetCell(kInputMaterialNum).NumericCellValue;
-                    }
-
                     else if (string.IsNullOrEmpty(BOMId))
                     {
                         output_material_list.Add(new BOMMaterialItem { MaterialId = outputMaterialId, Number = outputMaterialNum });
                     }
+
+                    if (!string.IsNullOrEmpty(inputMaterialId) && inputMaterialId != lastInputMaterialId)
+                    {
+                        // We should ajust 
+                        lastInputMaterialId = inputMaterialId;
+                        lastInputMaterialNum = (int)sheet.GetRow(row).GetCell(kInputMaterialNum).NumericCellValue;
+                    } 
+
+                    
                 }
             }
             return new Result { error_code = 0, bom_list = bom_list };
