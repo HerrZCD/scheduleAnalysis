@@ -98,6 +98,7 @@ namespace iSchedule.Base
                     }
                 }
             }
+            return new Result { error_code = 0, bom_list = null };
         }
     } // class ExtendBomDeserilizer
 } // namespace iSchedule.Base

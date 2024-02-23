@@ -59,6 +59,8 @@ namespace Analysis
             ////GlobalCache.AppendRequiredProducts(pbList);
             ////GlobalCache.AppendRequiredProducts(fpList);
             ////GlobalCache.AppendRequiredProducts(cpTRList);
+            ///
+            GlobalCache.InfoShowBOMList();
 
             //Console.WriteLine("Data has finished reading, start analyzing...");
 

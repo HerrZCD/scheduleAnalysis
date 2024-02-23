@@ -38,7 +38,7 @@ namespace iSchedule.Base
     {
         const string kSheetName = "BOM信息";
 
-        const int kStartRow = 2;
+        const int kStartRow = 11;
         const int kBOMIdColumn = 0;
         const int kProcedureIdColumn = 1;
         const int kProcedureNameColumn = 2;
