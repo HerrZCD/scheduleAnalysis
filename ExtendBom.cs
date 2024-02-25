@@ -60,7 +60,7 @@ namespace iSchedule.Base
                 // Null is when the row only contains empty cells.
                 if (sheet.GetRow(row) != null)
                 {
-                    if (string.IsNullOrEmpty(sheet.GetRow(row).GetCell(kOutputMaterialId).StringCellValue))
+                    if (sheet.GetRow(row).GetCell(kOutputMaterialId) == null || string.IsNullOrEmpty(sheet.GetRow(row).GetCell(kOutputMaterialId).StringCellValue))
                     {
                         // 没有输出材料，可能是中间有个合计的空行，跳过去就行了
                         continue;
