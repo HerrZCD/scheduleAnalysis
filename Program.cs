@@ -55,6 +55,11 @@ namespace Analysis
             OpenSheetAndPrintResult("../productList1.xlsx", "FP-PUF");
         }
 
+        public static void ReadBPPW()
+        {
+            OpenSheetAndPrintResult("../productList1.xlsx", "BP-PW");
+        }
+
         public static void ReadFPRSB()
         {
             OpenSheetAndPrintResult("../productList1.xlsx", "FP-RSB");
@@ -63,6 +68,26 @@ namespace Analysis
         public static void ReadBPPUF()
         {
             OpenSheetAndPrintResult("../productList1.xlsx", "BP-PUF");
+        }
+
+        public static void ReadSLPUF()
+        {
+            OpenSheetAndPrintResult("../productList1.xlsx", "SL-PUF");
+        }
+
+        public static void ReadSLPW()
+        {
+            OpenSheetAndPrintResult("../productList1.xlsx", "SL-PW");
+        }
+
+        public static void ReadSLRSB()
+        {
+            OpenSheetAndPrintResult("../productList1.xlsx", "SL-RSB");
+        }
+
+        public static void ReadSL()
+        {
+            OpenSheetAndPrintResult("../productList1.xlsx", "SL-套料");
         }
 
 
@@ -98,7 +123,12 @@ namespace Analysis
             //ReadFPPW();
             //  ReadFPRSB();
             // ReadFPCNC();
-            ReadBPPUF();
+            // ReadBPPUF();
+            // ReadBPPW();
+            // ReadSLPUF();
+            // ReadSLPW();
+            // ReadSLRSB();
+            ReadSL();
 
 
 

@@ -167,11 +167,22 @@ namespace iSchedule.Base
 
             // Handle the last bom number.
             float lastRate = (float)outputNumberOfInputMaterial / lastInputMaterialNum;
+  
             foreach (var item in tempList)
             {
-                foreach (var output in item.MaterialInfo.Output)
+                if (tempList.Count == 1)
                 {
-                    output.Number = (int)lastRate;
+                    foreach (var output in item.MaterialInfo.Output)
+                    {
+
+                        output.Number = lastInputMaterialNum == 0 ? 0 : (int)output.Number / lastInputMaterialNum;
+                    }
+                } else
+                {
+                    foreach (var output in item.MaterialInfo.Output)
+                    {
+                        output.Number = (int)lastRate;
+                    }
                 }
 
                 foreach (var input in item.MaterialInfo.Input)
