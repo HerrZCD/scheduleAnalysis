@@ -102,7 +102,7 @@ namespace iSchedule.Base
                         output_material_list.Add(new BOMMaterialItem { MaterialId = outputMaterialId, Number = outputMaterialNum });
                     }
 
-                    if (!Analysis.Base.Functions.IsMergedWithPreviousRow(sheet, row, kInputMaterialId) && row != kStartRow)
+                    if (!Analysis.Base.Functions.IsMergedWithPreviousRow(sheet, row, kInputMaterialNum) && row != kStartRow)
                     {
                         // Need to update the number of bom.
                         float rate = (float)outputNumberOfInputMaterial / lastInputMaterialNum;
@@ -130,8 +130,6 @@ namespace iSchedule.Base
                             }
                         }
 
-
-                        lastInputMaterialId = inputMaterialId;
                         tempList.Clear();
                         lastInputMaterialNum = Analysis.Base.Functions.TryGetNumberFromCell(sheet.GetRow(row).GetCell(kInputMaterialNum));
                         outputNumberOfInputMaterial = outputMaterialNum;
@@ -142,7 +140,14 @@ namespace iSchedule.Base
                         outputNumberOfInputMaterial += outputMaterialNum;
 
                     }
-                    
+
+                    // ============
+                    if (!Analysis.Base.Functions.IsMergedWithPreviousRow(sheet, row, kInputMaterialId))
+                    {
+
+                        lastInputMaterialId = inputMaterialId;
+                    }
+
                 }
             }
 
