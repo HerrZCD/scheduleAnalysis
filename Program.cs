@@ -19,6 +19,46 @@ namespace Analysis
             }
         }
 
+        public static void ReadFPCNC()
+        {
+            var result = iSchedule.Base.ExtendBomDeserilizer.DeserilizeExtendBOMList("../productList1.xlsx", "FP-CNC");
+            foreach (var bom in result.bom_list)
+            {
+                Console.WriteLine("=============== " + bom.BOMDataId + " ===============");
+                foreach (var input in bom.MaterialInfo.Input)
+                {
+                    Console.WriteLine("input: " + input.MaterialId + "  number: " + input.Number);
+                }
+                foreach (var output in bom.MaterialInfo.Output)
+                {
+                    Console.WriteLine("output: " + output.MaterialId + "  number: " + output.Number);
+                }
+            }
+        }
+
+        public static void ReadBP()
+        {
+            var result = iSchedule.Base.ExtendBomDeserilizer.DeserilizeExtendBOMList("../productList1.xlsx", "BP套料");
+            if (result == null || result.bom_list == null)
+            {
+                Console.WriteLine("Failed to deserilize BOM list.");
+                return;
+            }
+            foreach (var bom in result.bom_list)
+            {
+                Console.WriteLine("=============== " + bom.BOMDataId + " ===============");
+                foreach (var input in bom.MaterialInfo.Input)
+                {
+                    Console.WriteLine("input: " + input.MaterialId + "  number: " + input.Number);
+                }
+                foreach (var output in bom.MaterialInfo.Output)
+                {
+                    Console.WriteLine("output: " + output.MaterialId + "  number: " + output.Number);
+                }
+            }
+        }
+
+
         public static void LoadBOMList()
         {
             string file_path = "../BOM1.xlsx";
@@ -38,28 +78,17 @@ namespace Analysis
         }
         public static async Task Execute(string[] args)
         {
-           //await Task.Run(() => LoadBOMList());
-           //await Task.Run(() => ReadOrders());
+            //await Task.Run(() => LoadBOMList());
+            //await Task.Run(() => ReadOrders());
 
             //Console.WriteLine("Data has finished reading, start analyzing...");
 
             // We want to know all the boms and the repeat times of the boms if we want to produce the products.
 
-            GlobalCache.WriteAllWorksToFile();
+            // GlobalCache.WriteAllWorksToFile();
 
-            var result = iSchedule.Base.ExtendBomDeserilizer.DeserilizeExtendBOMList("../productList.xlsx", "FP-CNC");
-            foreach (var bom in result.bom_list)
-            {
-                Console.WriteLine("=============== " + bom.BOMDataId + " ===============");
-                foreach (var input in bom.MaterialInfo.Input)
-                {
-                    Console.WriteLine("input: " + input.MaterialId + "  number: " + input.Number);
-                }
-                foreach (var output in bom.MaterialInfo.Output)
-                {
-                    Console.WriteLine("output: " + output.MaterialId + "  number: " + output.Number);
-                }
-            }
+            // ReadBP()
+            ReadFPCNC();
 
             //// We want to know the time the 4 functions take.
             //var watch = System.Diagnostics.Stopwatch.StartNew();

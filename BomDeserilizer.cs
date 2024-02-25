@@ -46,7 +46,7 @@ namespace iSchedule.Base
         const int kInputMaterialId = 4;
         const int kInputMaterialNum = 5;
         const int kOutputMaterialId = 6;
-        const int kOutputMaterialNum = 7;
+        const int kOutputMaterialNumTotal = 7;
         const int KPreCutGraph = 9;
         const int KCutGraph = 10;
         const int KPressGraph = 11;
@@ -99,7 +99,7 @@ namespace iSchedule.Base
                             input_material_list.Add(new BOMMaterialItem
                             {
                                 MaterialId = last_input_material_id,
-                                Number = (int)sheet.GetRow(row).GetCell(kInputMaterialNum).NumericCellValue
+                                Number = Analysis.Base.Functions.TryGetNumberFromCell(sheet.GetRow(row).GetCell(kInputMaterialNum))
                             });
                         }
                         // Handle output material.
@@ -110,7 +110,7 @@ namespace iSchedule.Base
                             output_material_list.Add(new BOMMaterialItem
                             {
                                 MaterialId = last_output_material_id,
-                                Number = (int)sheet.GetRow(row).GetCell(kOutputMaterialNum).NumericCellValue
+                                Number = (int)sheet.GetRow(row).GetCell(kOutputMaterialNumTotal).NumericCellValue
                             });
                         }
                         continue;
@@ -163,7 +163,7 @@ namespace iSchedule.Base
                             output_material_list.Add(new BOMMaterialItem
                             {
                                 MaterialId = last_output_material_id,
-                                Number = (int)sheet.GetRow(row).GetCell(kOutputMaterialNum).NumericCellValue
+                                Number = (int)sheet.GetRow(row).GetCell(kOutputMaterialNumTotal).NumericCellValue
                             });
                         }
                         else
@@ -193,7 +193,7 @@ namespace iSchedule.Base
                             output_material_list.Add(new BOMMaterialItem
                             {
                                 MaterialId = last_output_material_id,
-                                Number = (int)sheet.GetRow(row).GetCell(kOutputMaterialNum).NumericCellValue
+                                Number = (int)sheet.GetRow(row).GetCell(kOutputMaterialNumTotal).NumericCellValue
                             });
                         }
 
@@ -217,7 +217,7 @@ namespace iSchedule.Base
                             output_material_list.Add(new BOMMaterialItem
                             {
                                 MaterialId = last_output_material_id,
-                                Number = (int)sheet.GetRow(row).GetCell(kOutputMaterialNum).NumericCellValue
+                                Number = (int)sheet.GetRow(row).GetCell(kOutputMaterialNumTotal).NumericCellValue
                             });
                         }
                     }

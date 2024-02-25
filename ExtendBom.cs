@@ -6,6 +6,7 @@ using System.Text.Json;
 using Analysis.Base;
 using NPOI.HSSF.Record;
 
+
 namespace iSchedule.Base
 {
     // This class used for BOMs related to cutting which not recorded in the original BOM.
@@ -17,7 +18,8 @@ namespace iSchedule.Base
         const int kInputMaterialId = 2;
         const int kInputMaterialNum = 3;
         const int kOutputMaterialId = 6;
-        const int kOutputMaterialNum = 7;
+        const int kOutputMaterialSingle = 7;
+        const int kOutputMaterialNumTotal = 8;
 
         public class Result
         {
@@ -37,6 +39,9 @@ namespace iSchedule.Base
 
             // We assume there is a fixed rate between boms which share the same imput material, that say, if material A
             // produce 10 Bs in BOM b, so A will also procduce 10 Cs in BOM c.
+
+            // 多个bom共享一个输入材料的时候，我们认为这个时候的语义是N中材料采用M种切法，但是一个bom对应一个输入物料产生
+            // A, b. c三种物料，就简单读成一个bom。
             var hssfwb = DeserilizeUtil.LoadWorkbook(filePath);
             ISheet sheet = hssfwb.GetSheet(sheetName);
             if (sheet == null)
@@ -52,6 +57,13 @@ namespace iSchedule.Base
             List<BOMMaterialItem> output_material_list = new List<BOMMaterialItem>();
             for (int row = kStartRow; row <= sheet.LastRowNum; row++)
             {
+                if (row != kStartRow)
+                {
+                    if (!Analysis.Base.Functions.IsMergedWithPreviousRow(sheet, row, kInputMaterialId))
+                    {
+                        Console.WriteLine("new line: "+ row);
+                    }
+                }
                 // Null is when the row only contains empty cells.
                 if (sheet.GetRow(row) != null)
                 {
@@ -63,7 +75,7 @@ namespace iSchedule.Base
                     string BOMId = sheet.GetRow(row).GetCell(kBOMIdColumn).StringCellValue;
                     string inputMaterialId = sheet.GetRow(row).GetCell(kInputMaterialId).StringCellValue;
                     string outputMaterialId = sheet.GetRow(row).GetCell(kOutputMaterialId).StringCellValue;
-                    int outputMaterialNum = (int)sheet.GetRow(row).GetCell(kOutputMaterialNum).NumericCellValue;
+                    int outputMaterialNum = Analysis.Base.Functions.TryGetNumberFromCell(sheet.GetRow(row).GetCell(kOutputMaterialNumTotal));
 
                     if (!string.IsNullOrEmpty(BOMId) && BOMId != lastBOMId)
                     {
@@ -91,16 +103,27 @@ namespace iSchedule.Base
                         output_material_list.Add(new BOMMaterialItem { MaterialId = outputMaterialId, Number = outputMaterialNum });
                     }
 
-                    if (!string.IsNullOrEmpty(inputMaterialId) && inputMaterialId != lastInputMaterialId)
+                    if (!Analysis.Base.Functions.IsMergedWithPreviousRow(sheet, row, kInputMaterialId) && row != kStartRow)
                     {
                         // Need to update the number of bom.
                         float rate = (float)outputNumberOfInputMaterial / lastInputMaterialNum;
                         foreach (var item in tempList)
                         {
-                            foreach (var output in item.MaterialInfo.Output)
+                            if (tempList.Count == 1)
                             {
-                                output.Number = (int)rate;
+                                foreach (var output in item.MaterialInfo.Output)
+                                {
+
+                                    output.Number = lastInputMaterialNum == 0 ? 0 : (int)output.Number / lastInputMaterialNum;
+                                }
+                            } else
+                            {
+                                foreach (var output in item.MaterialInfo.Output)
+                                {
+                                    output.Number = (int)rate;
+                                }
                             }
+                            
 
                             foreach (var input in item.MaterialInfo.Input)
                             {
@@ -111,7 +134,7 @@ namespace iSchedule.Base
 
                         lastInputMaterialId = inputMaterialId;
                         tempList.Clear();
-                        lastInputMaterialNum = (int)sheet.GetRow(row).GetCell(kInputMaterialNum).NumericCellValue;
+                        lastInputMaterialNum = Analysis.Base.Functions.TryGetNumberFromCell(sheet.GetRow(row).GetCell(kInputMaterialNum));
                         outputNumberOfInputMaterial = outputMaterialNum;
                     } 
 
@@ -120,7 +143,6 @@ namespace iSchedule.Base
                         outputNumberOfInputMaterial += outputMaterialNum;
 
                     }
-
                     
                 }
             }
