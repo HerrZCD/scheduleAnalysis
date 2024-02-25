@@ -40,7 +40,20 @@ namespace Analysis
         public static void WriteAllBomsToJSON()
         {
             var json = JsonSerializer.Serialize(BOMList);
-            System.IO.File.WriteAllText(@"./BOMList.txt", json);
+            System.IO.File.WriteAllText(@"./BOMList.json", json);
+        }
+
+        public static void LoadAllBomsFromJSON()
+        {
+            string json = System.IO.File.ReadAllText(@"./BOMList.json");
+            BOMList = JsonSerializer.Deserialize<List<BomData>>(json);
+
+            if (BOMList == null)
+            {
+                Console.WriteLine("Failed to load BOMList from file.");
+            }
+
+            Console.WriteLine($"Loaded {BOMList.Count} BOMs");
         }
 
         public static void AppendWork(GraphID id, GraphRepeatTimes times) { 
@@ -97,10 +110,37 @@ namespace Analysis
             }
         }
 
+        public static List<BomData> FindBOMsContainsGivenProduct(string id)
+        {
+            return BOMList.FindAll(bom => bom.MaterialInfo.Output.Any(output => output.MaterialId == id));
+        }
+        public static BomData FindBOMFromGivenOutput(string id)
+        {
+            var list = FindBOMsContainsGivenProduct(id);
+            if (list == null) return null;
+            foreach (var bom in list)
+            {
+                 // Only check no loop exist.
+                if (bom.MaterialInfo.Input.Any(input => input.MaterialId == id))
+                {
+                    continue;
+                }
+                else
+                {
+                     return bom;
+                }
+            }
+            return null;
+        }
+
         // We check an id, if this id do not exist in the BOMList, we should stop.
         // We record all the works from the topest bom to the most fundamental bom.
         public static void TraverseHandleBOM(string id, int number)
         {
+            // 对于要生产的某个产品，我们先看看有没有指定的BOMid和这个id匹配，如果有，我们要检查
+            // 是不是LOOP的情况。
+
+            // 对于BOMid是空和LOOP的情况，我们循环这个BOM列表找到输出产品包含该产品的BOM/套料图
             if (string.IsNullOrEmpty(id) || number == 0)
             {
                 return;
@@ -113,37 +153,91 @@ namespace Analysis
                 // 1. The id is not in the BOMList. We should fix the bom list in our system.
                 // 2. This id is a product, we should not go further.
                 Console.WriteLine("BOM id not in BOM list: "+ id + " number: " + number);
-                return;
-            } else
-            {
-                 // Record the work.
-                if (AllWorksToDo.ContainsKey(bom.BOMDataId))
+                bom = FindBOMFromGivenOutput(id);
+
+                if (bom != null)
                 {
-                    AllWorksToDo[bom.BOMDataId] += number;
+                    Console.WriteLine("找到套料图: " + bom.BOMDataId);
                 }
                 else
                 {
-                    AllWorksToDo.Add(bom.BOMDataId, number);
+                    Console.WriteLine("找不到套料图: " + id);
+                    return;
                 }
-
-                // Go further.
+            }    
+            else
+            {
                 foreach (var subBom in bom.MaterialInfo.Input)
                 {
                     if (id == subBom.MaterialId)
                     {
-                        // This is a loop, we should stop here.
-                        Console.WriteLine("Loop exist in: " + id);
-                        return;
+                        Console.WriteLine($"发现BOMId和输入相同的情况: {id}, 正在搜寻合适的套料图...");
+                        bom = FindBOMFromGivenOutput(id);
+                        if (bom != null)
+                        {
+                            Console.WriteLine("找到套料图: " + bom.BOMDataId);
+                        }
+                        else
+                        {
+                            Console.WriteLine("找不到套料图: " + id);
+                            return;
+                        }
                     }
-                    TraverseHandleBOM(subBom.MaterialId, subBom.Number * number);
                 }
+            }
+
+            int outputNum = 0;
+            foreach (var o in bom.MaterialInfo.Output)
+            {
+                if (o.MaterialId == id)
+                {
+                    outputNum = o.Number;
+                    break;
+                    // TODO:
+                    // Record all output.
+                }
+            }
+
+            if (outputNum == 0)
+            {
+                // 如果产出就一个的话， 那么我们认为BOMid和产出是别名关系。
+                if (bom.MaterialInfo.Output.Count == 1)
+                {
+                    outputNum = bom.MaterialInfo.Output[0].Number;
+                }
+                else
+                {
+                    Console.WriteLine($"BOM 的输出和BOM id {id}没对上");
+                    return;
+                }
+            }
+
+            int needRepeatTimes = (int)Math.Ceiling((double)number / (double)outputNum);
+            // Record the work.
+            if (AllWorksToDo.ContainsKey(bom.BOMDataId))
+            {
+                AllWorksToDo[bom.BOMDataId] += number;
+            }
+            else
+            {
+                AllWorksToDo.Add(bom.BOMDataId, number);
+            }
+
+            // Go further.
+            foreach (var i in bom.MaterialInfo.Input)
+            {
+                TraverseHandleBOM(i.MaterialId, i.Number * needRepeatTimes);
             }
         }
 
         public static void WriteAllWorksToFile()
         {
-            foreach (var productInfo in GlobalCache.RequiredProducts)
+           List<AssemblyReader.Result> results = new List<AssemblyReader.Result>();
+            results.Add(GlobalCache.RequiredProducts[0]);
+            // foreach (var productInfo in GlobalCache.RequiredProducts)
+            foreach (var productInfo in results)
             {
+                Console.WriteLine($"正在处理产品: {productInfo.graphName}");
                 int repeatTimes = productInfo.graphNumber;
 
                 TraverseHandleBOM(productInfo.graphName, repeatTimes);
@@ -153,6 +247,7 @@ namespace Analysis
                 {
                     foreach (var work in AllWorksToDo)
                     {
+                        Console.WriteLine(work.Key + " " + work.Value);
                         file.WriteLine(work.Key + " " + work.Value);
                     }
                 }

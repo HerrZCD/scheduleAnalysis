@@ -20,21 +20,29 @@ namespace Analysis
         }
 
         public static void OpenSheetAndPrintResult(string excelPath, string sheetName) {
+            Console.WriteLine($"Reading {sheetName}...");
             var result = iSchedule.Base.ExtendBomDeserilizer.DeserilizeExtendBOMList(excelPath, sheetName);
             foreach (var bom in result.bom_list)
             {
-                Console.WriteLine("=============== " + bom.BOMDataId + " ===============");
-                foreach (var input in bom.MaterialInfo.Input)
-                {
-                    Console.WriteLine("input: " + input.MaterialId + "  number: " + input.Number);
-                }
-                foreach (var output in bom.MaterialInfo.Output)
-                {
-                    Console.WriteLine("output: " + output.MaterialId + "  number: " + output.Number);
-                }
 
                 GlobalCache.AppendBOMData(bom);
             }
+        }
+
+        public static void WriteBOMData()
+        {
+            ReadBP();
+            ReadFP_PUF();
+            ReadFPPW();
+            ReadFPRSB();
+            // ReadFPCNC();
+            ReadBPPUF();
+            ReadBPPW();
+            ReadSLPUF();
+            ReadSLPW();
+            ReadSLRSB();
+            ReadSL();
+            GlobalCache.WriteAllBomsToJSON();
         }
 
         public static void ReadFPCNC()
@@ -112,26 +120,17 @@ namespace Analysis
         }
         public static async Task Execute(string[] args)
         {
-            //await Task.Run(() => LoadBOMList());
-            //await Task.Run(() => ReadOrders());
+            await Task.Run(() => LoadBOMList());
+            await Task.Run(() => ReadOrders());
 
             //Console.WriteLine("Data has finished reading, start analyzing...");
 
-            // We want to know all the boms and the repeat times of the boms if we want to produce the products.
 
-            // GlobalCache.WriteAllWorksToFile();
 
-            // ReadBP();
-            //ReadFPPW();
-            //  ReadFPRSB();
-            // ReadFPCNC();
-            // ReadBPPUF();
-            // ReadBPPW();
-            // ReadSLPUF();
-            // ReadSLPW();
-            // ReadSLRSB();
-            ReadSL();
-            GlobalCache.WriteAllBomsToJSON();
+
+            GlobalCache.LoadAllBomsFromJSON();
+            GlobalCache.WriteAllWorksToFile();
+            Console.WriteLine("Writing finished!");
 
 
 
