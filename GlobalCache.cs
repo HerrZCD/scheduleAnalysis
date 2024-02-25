@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 using GraphID = System.String;
@@ -19,6 +20,27 @@ namespace Analysis
         public static void SetBOMList(List<BomData> list)
         {
             BOMList = list;
+        }
+
+        public static void AppendBOMData(BomData data)
+        {
+            var exist = BOMList.Find(bom => bom.BOMDataId == data.BOMDataId);
+            if (exist != null)
+            {
+                BOMList.Remove(exist);
+                exist.MaterialInfo = data.MaterialInfo;
+                BOMList.Add(exist);
+            } 
+            else
+            {
+                BOMList.Add(data);
+            }
+        }
+
+        public static void WriteAllBomsToJSON()
+        {
+            var json = JsonSerializer.Serialize(BOMList);
+            System.IO.File.WriteAllText(@"./BOMList.txt", json);
         }
 
         public static void AppendWork(GraphID id, GraphRepeatTimes times) { 

@@ -32,6 +32,8 @@ namespace Analysis
                 {
                     Console.WriteLine("output: " + output.MaterialId + "  number: " + output.Number);
                 }
+
+                GlobalCache.AppendBOMData(bom);
             }
         }
 
@@ -129,6 +131,7 @@ namespace Analysis
             // ReadSLPW();
             // ReadSLRSB();
             ReadSL();
+            GlobalCache.WriteAllBomsToJSON();
 
 
 
