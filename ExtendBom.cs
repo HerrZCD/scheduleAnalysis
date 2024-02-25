@@ -57,19 +57,13 @@ namespace iSchedule.Base
             List<BOMMaterialItem> output_material_list = new List<BOMMaterialItem>();
             for (int row = kStartRow; row <= sheet.LastRowNum; row++)
             {
-                if (row != kStartRow)
-                {
-                    if (!Analysis.Base.Functions.IsMergedWithPreviousRow(sheet, row, kInputMaterialId))
-                    {
-                        Console.WriteLine("new line: "+ row);
-                    }
-                }
                 // Null is when the row only contains empty cells.
                 if (sheet.GetRow(row) != null)
                 {
                     if (string.IsNullOrEmpty(sheet.GetRow(row).GetCell(kOutputMaterialId).StringCellValue))
                     {
-                        break;
+                        // 没有输出材料，可能是中间有个合计的空行，跳过去就行了
+                        continue;
                     }
 
                     string BOMId = sheet.GetRow(row).GetCell(kBOMIdColumn).StringCellValue;

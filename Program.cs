@@ -19,9 +19,8 @@ namespace Analysis
             }
         }
 
-        public static void ReadFPCNC()
-        {
-            var result = iSchedule.Base.ExtendBomDeserilizer.DeserilizeExtendBOMList("../productList1.xlsx", "FP-CNC");
+        public static void OpenSheetAndPrintResult(string excelPath, string sheetName) {
+            var result = iSchedule.Base.ExtendBomDeserilizer.DeserilizeExtendBOMList(excelPath, sheetName);
             foreach (var bom in result.bom_list)
             {
                 Console.WriteLine("=============== " + bom.BOMDataId + " ===============");
@@ -36,26 +35,19 @@ namespace Analysis
             }
         }
 
+        public static void ReadFPCNC()
+        {
+            OpenSheetAndPrintResult("../productList1.xlsx", "FP-CNC");
+        }
+
         public static void ReadBP()
         {
-            var result = iSchedule.Base.ExtendBomDeserilizer.DeserilizeExtendBOMList("../productList1.xlsx", "BP套料");
-            if (result == null || result.bom_list == null)
-            {
-                Console.WriteLine("Failed to deserilize BOM list.");
-                return;
-            }
-            foreach (var bom in result.bom_list)
-            {
-                Console.WriteLine("=============== " + bom.BOMDataId + " ===============");
-                foreach (var input in bom.MaterialInfo.Input)
-                {
-                    Console.WriteLine("input: " + input.MaterialId + "  number: " + input.Number);
-                }
-                foreach (var output in bom.MaterialInfo.Output)
-                {
-                    Console.WriteLine("output: " + output.MaterialId + "  number: " + output.Number);
-                }
-            }
+            OpenSheetAndPrintResult("../productList1.xlsx", "BP套料");
+        }
+
+        public static void ReadFP_PUF()
+        {
+            OpenSheetAndPrintResult("../productList1.xlsx", "FP-PUF");
         }
 
 
@@ -88,7 +80,7 @@ namespace Analysis
             // GlobalCache.WriteAllWorksToFile();
 
             // ReadBP()
-            ReadFPCNC();
+            ReadFP_PUF();
 
             //// We want to know the time the 4 functions take.
             //var watch = System.Diagnostics.Stopwatch.StartNew();
