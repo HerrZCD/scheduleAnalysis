@@ -40,6 +40,11 @@ namespace Analysis
             OpenSheetAndPrintResult("../productList1.xlsx", "FP-CNC");
         }
 
+        public static void ReadFPPW()
+        {
+            OpenSheetAndPrintResult("../productList1.xlsx", "FP-PW");
+        }
+
         public static void ReadBP()
         {
             OpenSheetAndPrintResult("../productList1.xlsx", "BP套料");
@@ -79,8 +84,8 @@ namespace Analysis
 
             // GlobalCache.WriteAllWorksToFile();
 
-            // ReadBP()
-            ReadFP_PUF();
+            // ReadBP();
+            ReadFPPW();
 
             //// We want to know the time the 4 functions take.
             //var watch = System.Diagnostics.Stopwatch.StartNew();

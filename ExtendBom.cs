@@ -66,6 +66,11 @@ namespace iSchedule.Base
                         continue;
                     }
 
+                    if (row == kStartRow)
+                    {
+                        lastInputMaterialNum = Analysis.Base.Functions.TryGetNumberFromCell(sheet.GetRow(row).GetCell(kInputMaterialNum));
+                    }
+
                     string BOMId = sheet.GetRow(row).GetCell(kBOMIdColumn).StringCellValue;
                     string inputMaterialId = sheet.GetRow(row).GetCell(kInputMaterialId).StringCellValue;
                     string outputMaterialId = sheet.GetRow(row).GetCell(kOutputMaterialId).StringCellValue;
