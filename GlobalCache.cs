@@ -15,6 +15,7 @@ namespace Analysis
     internal class GlobalCache
     {
         public static Dictionary<GraphID, GraphRepeatTimes> AllWorksToDo = new Dictionary<GraphID, GraphRepeatTimes>();
+        public static Dictionary<GraphID, GraphRepeatTimes> WorksToDoOfSingleProduct = new Dictionary<GraphID, GraphRepeatTimes>();
         public static List<BomData> BOMList = new List<BomData>();
         public static List<AssemblyReader.Result> RequiredProducts = new List<AssemblyReader.Result>();
         public static void SetBOMList(List<BomData> list)
@@ -223,6 +224,15 @@ namespace Analysis
                 AllWorksToDo.Add(bom.BOMDataId, number);
             }
 
+            if (WorksToDoOfSingleProduct.ContainsKey(bom.BOMDataId))
+            {
+                WorksToDoOfSingleProduct[bom.BOMDataId] += number;
+            }
+            else
+            {
+                WorksToDoOfSingleProduct.Add(bom.BOMDataId, number);
+            }
+
             // Go further.
             foreach (var i in bom.MaterialInfo.Input)
             {
@@ -232,12 +242,14 @@ namespace Analysis
 
         public static void WriteAllWorksToFile()
         {
-           List<AssemblyReader.Result> results = new List<AssemblyReader.Result>();
-            results.Add(GlobalCache.RequiredProducts[0]);
-            // foreach (var productInfo in GlobalCache.RequiredProducts)
-            foreach (var productInfo in results)
+            List<AssemblyReader.Result> results = new List<AssemblyReader.Result>();
+            results.Add(GlobalCache.RequiredProducts[2]);
+            foreach (var productInfo in GlobalCache.RequiredProducts)
+            // foreach (var productInfo in results)
             {
-                Console.WriteLine($"正在处理产品: {productInfo.graphName}");
+                WorksToDoOfSingleProduct.Clear();
+                Console.Clear();
+                Console.WriteLine($"正在处理产品: {productInfo.graphName}, 这个订单需要{productInfo.graphNumber}个");
                 int repeatTimes = productInfo.graphNumber;
 
                 TraverseHandleBOM(productInfo.graphName, repeatTimes);
@@ -248,6 +260,15 @@ namespace Analysis
                     foreach (var work in AllWorksToDo)
                     {
                         Console.WriteLine(work.Key + " " + work.Value);
+                        file.WriteLine(work.Key + " " + work.Value);
+                    }
+                }
+
+                using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"./Works.txt", true /*append*/))
+                {
+                    file.WriteLine($"====正在处理产品: {productInfo.graphName}, 这个订单需要{productInfo.graphNumber}个====");
+                    foreach (var work in WorksToDoOfSingleProduct)
+                    {
                         file.WriteLine(work.Key + " " + work.Value);
                     }
                 }
